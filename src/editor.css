@@ -1,0 +1,499 @@
+/* ============================================================
+   Editor host & CodeMirror base
+   ============================================================ */
+.editor-host {
+  height: 100%;
+  overflow: hidden;
+}
+
+.cm-editor {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.cm-editor .cm-line {
+  padding: 0 4px;
+}
+
+/* ============================================================
+   Headings (h1–h10)
+   ============================================================ */
+.cm-heading {
+  font-weight: 700;
+  color: #f4f4f4;
+}
+
+.cm-h1 { font-size: 1.9em; padding-top: 0.3em; }
+.cm-h2 { font-size: 1.6em; padding-top: 0.25em; }
+.cm-h3 { font-size: 1.35em; }
+.cm-h4 { font-size: 1.2em; }
+.cm-h5 { font-size: 1.1em; }
+.cm-h6 { font-size: 1.05em; }
+.cm-h7,
+.cm-h8,
+.cm-h9,
+.cm-h10 {
+  font-size: 1em;
+  font-style: italic;
+  color: #e0e0e0;
+}
+
+/* ============================================================
+   Inline marks
+   ============================================================ */
+.cm-bold { font-weight: 700; }
+.cm-italic { font-style: italic; }
+.cm-underline { text-decoration: underline; text-underline-offset: 2px; }
+.cm-strike { text-decoration: line-through; color: var(--muted); }
+.cm-highlight { background: var(--highlight); border-radius: 2px; padding: 0 2px; }
+.cm-sup { font-size: 0.75em; vertical-align: super; }
+.cm-sub { font-size: 0.75em; vertical-align: sub; }
+.cm-latex { color: #dcdcaa; }
+.cm-comment { color: var(--muted); opacity: 0.5; font-style: italic; }
+.cm-link { color: var(--accent); text-decoration: underline; cursor: pointer; }
+.cm-link:hover { color: #7cb4e6; }
+.cm-pin { margin: 0 2px; cursor: help; }
+
+/* ============================================================
+   Slash-command colors
+   ============================================================ */
+.cm-color-r { color: #ef4444; }
+.cm-color-g { color: #10b981; }
+.cm-color-b { color: #3b82f6; }
+.cm-color-y { color: #eab308; }
+.cm-color-c { color: #06b6d4; }
+.cm-color-m { color: #d946ef; }
+
+/* ============================================================
+   Bullets + tasks
+   ============================================================ */
+.cm-bullet-line { position: relative; }
+.cm-bullet-marker {
+  color: var(--accent);
+  pointer-events: none;
+  font-size: 1.05em;
+  line-height: 1;
+}
+
+.cm-task-checkbox {
+  margin-right: 0.4em;
+  vertical-align: middle;
+  accent-color: var(--accent);
+  cursor: pointer;
+  transform: translateY(-1px);
+}
+
+.cm-task-checkbox:hover {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-radius: 2px;
+}
+
+/* ============================================================
+   Divider
+   ============================================================ */
+.cm-divider {
+  display: inline-block;
+  width: 100%;
+  height: 1px;
+  border: 0;
+  background: var(--border);
+  vertical-align: middle;
+  margin: 0.5em 0;
+}
+
+/* ============================================================
+   Math preview
+   ============================================================ */
+.cm-math-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 4px 8px;
+  margin: 2px 0 4px 0;
+  background: var(--surface-2);
+  border-left: 3px solid var(--accent);
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+
+.cm-math-preview-item {
+  color: #dcdcaa;
+}
+
+/* ============================================================
+   Code block — [toggle] [lang] [copy]
+   ============================================================ */
+.cm-code-block {
+  display: block;
+  margin: 6px 0;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.cm-code-header {
+  display: flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 8px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  font-size: 0.82em;
+}
+
+.cm-code-toggle {
+  width: 22px;
+  height: 20px;
+  padding: 0;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.95em;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.cm-code-toggle:hover {
+  background: var(--bg);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.cm-code-lang {
+  flex: 1;
+  text-align: center;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.cm-code-copy {
+  margin-left: auto;
+  padding: 2px 8px;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.95em;
+  line-height: 1.2;
+  flex-shrink: 0;
+}
+
+.cm-code-copy:hover {
+  background: var(--bg);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.cm-code-block pre {
+  margin: 0;
+  padding: 10px 12px;
+  overflow-x: auto;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.9em;
+}
+
+.cm-code-block pre code {
+  outline: none;
+  display: block;
+}
+
+.cm-code-block pre code[contenteditable="true"] {
+  background: var(--bg);
+  padding: 4px 6px;
+  border-radius: 2px;
+}
+
+/* ============================================================
+   Embeds — image / audio / video
+   ============================================================ */
+.cm-embed {
+  display: inline-block;
+  vertical-align: top;
+  max-width: 100%;
+}
+
+/* Image */
+.cm-embed-img-box {
+  display: inline-block;
+  resize: both;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  padding: 2px;
+  min-width: 60px;
+  min-height: 40px;
+  line-height: 0;
+  vertical-align: top;
+}
+
+.cm-embed-img-box img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Audio — dark, boxy, matches other widgets */
+.cm-embed-audio-box {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  height: 40px;
+  max-width: 100%;
+}
+
+.cm-embed-audio-box audio {
+  width: 280px;
+  height: 30px;
+  outline: none;
+  color-scheme: dark;
+  background: transparent;
+}
+
+/* Video — top bar / video / bottom progress */
+.cm-embed-video-box {
+  display: inline-flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.cm-embed-video-top {
+  height: 24px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  font-size: 0.8em;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.cm-embed-video-el {
+  display: block;
+  width: 480px;
+  max-width: 100%;
+  max-height: 320px;
+  background: #000;
+  cursor: pointer;
+}
+
+.cm-embed-video-bottom {
+  height: 18px;
+  padding: 0 6px;
+  display: flex;
+  align-items: center;
+  background: var(--surface-2);
+  border-top: 1px solid var(--border);
+}
+
+.cm-embed-video-track {
+  flex: 1;
+  height: 6px;
+  background: var(--bg);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.cm-embed-video-fill {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--accent);
+  transition: width 100ms linear;
+}
+
+/* ============================================================
+   Table widget — CSS grid so controls sit OUTSIDE the table
+   ============================================================ */
+.cm-table-widget {
+  display: inline-grid;
+  grid-template-columns: auto auto;
+  grid-template-rows: auto auto;
+  grid-template-areas:
+    "table colbar"
+    "rowbar .";
+  gap: 6px;
+  margin: 16px 0 16px 16px;
+  vertical-align: top;
+  padding: 0;
+  background: transparent;
+}
+
+/* The table itself — this is the visible bordered box */
+.cm-table-inner {
+  grid-area: table;
+  position: relative;
+  display: inline-block;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+}
+
+.cm-table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 0.95em;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.cm-table th,
+.cm-table td {
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+  outline: none;
+  color: var(--text);
+  word-break: break-word;
+  background: var(--surface);
+}
+
+.cm-table th {
+  background: var(--surface-2);
+  font-weight: 600;
+}
+
+.cm-table th:focus,
+.cm-table td:focus {
+  background: var(--bg);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+/* Row controls — own grid cell, below the table */
+.cm-table-row-bar {
+  grid-area: rowbar;
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Column controls — own grid cell, to the right of the table */
+.cm-table-col-bar {
+  grid-area: colbar;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  justify-content: center;
+  align-items: center;
+}
+
+.cm-table-sq-btn {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-2);
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 1em;
+  line-height: 1;
+}
+
+.cm-table-sq-btn:hover {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+
+/* Resize handle — pinned to the table's bottom-right corner */
+.cm-table-resize-handle {
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 14px;
+  height: 14px;
+  cursor: nwse-resize;
+  z-index: 5;
+  background:
+    linear-gradient(135deg, transparent 40%, var(--muted) 40%, var(--muted) 55%, transparent 55%),
+    linear-gradient(135deg, transparent 60%, var(--muted) 60%, var(--muted) 75%, transparent 75%);
+}
+
+.cm-table-resize-handle:hover {
+  background:
+    linear-gradient(135deg, transparent 40%, var(--accent) 40%, var(--accent) 55%, transparent 55%),
+    linear-gradient(135deg, transparent 60%, var(--accent) 60%, var(--accent) 75%, transparent 75%);
+}
+
+/* ============================================================
+   Canvas
+   ============================================================ */
+.cm-canvas-box {
+  display: inline-block;
+  margin: 8px 0;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.cm-canvas-toolbar {
+  display: flex;
+  gap: 6px;
+  padding: 4px 8px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+}
+
+.cm-canvas-toolbar button {
+  padding: 2px 10px;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.85em;
+}
+
+.cm-canvas-toolbar button.active {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+
+.cm-canvas-toolbar button:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.cm-canvas-toolbar button.active:hover {
+  color: var(--bg);
+}
+
+.cm-canvas-box canvas {
+  display: block;
+  width: 400px;
+  height: 400px;
+  cursor: crosshair;
+  background: #ffffff;
+}

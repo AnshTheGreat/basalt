@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",   // ← critical: not "node" or "node16"
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": true, // optional
+    "noEmit": true                      // required if allowImportingTsExtensions is true
+  },
+  "include": ["src/**/*.ts", "src/**/*.d.ts"]
+}

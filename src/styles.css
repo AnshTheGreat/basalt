@@ -1,0 +1,477 @@
+/* ============================================================
+   Variables
+   ============================================================ */
+:root {
+  --bg: #1e1e1e;
+  --surface: #252526;
+  --surface-2: #2d2d30;
+  --text: #d4d4d4;
+  --muted: #858585;
+  --accent: #569cd6;
+  --border: #3c3c3c;
+  --highlight: #f4d47c44;
+}
+
+/* ============================================================
+   Reset & base
+   ============================================================ */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+html,
+body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+#layout-root {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+/* ============================================================
+   Vault wizard (first run)
+   ============================================================ */
+.vault-wizard-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+
+.vault-wizard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 36px 44px;
+  max-width: 480px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+.vault-wizard h1 {
+  font-size: 1.7em;
+  margin-bottom: 10px;
+  color: #f4f4f4;
+}
+
+.vault-wizard p {
+  color: var(--muted);
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.wizard-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.wizard-actions button {
+  padding: 10px 20px;
+  border-radius: 6px;
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 0.95em;
+  font-family: inherit;
+  transition: all 120ms;
+}
+
+.wizard-actions button:hover {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+.wizard-hint {
+  font-size: 0.8em;
+}
+
+/* ============================================================
+   Inline dialog (new note / rename / delete confirm)
+   ============================================================ */
+.inline-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.inline-dialog {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px 24px;
+  min-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+.inline-dialog label {
+  color: var(--muted);
+  font-size: 0.85em;
+}
+
+.inline-dialog input {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px 10px;
+  font-family: inherit;
+  font-size: 0.95em;
+  outline: none;
+}
+
+.inline-dialog input:focus {
+  border-color: var(--accent);
+}
+
+.inline-dialog-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.inline-dialog-actions button {
+  padding: 6px 14px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.inline-dialog-actions button[data-act="ok"] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.inline-dialog-actions button:hover {
+  background: var(--surface-2);
+}
+
+/* ============================================================
+   File tree pane (left)
+   ============================================================ */
+.tree-pane {
+  padding: 8px;
+  font-size: 13px;
+  overflow: auto;
+  height: 100%;
+}
+
+.tree-new-btn {
+  width: 100%;
+  padding: 6px;
+  margin-bottom: 8px;
+  background: transparent;
+  border: 1px dashed var(--border);
+  color: var(--muted);
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+}
+
+.tree-new-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.tree-list {
+  list-style: none;
+  padding-left: 8px;
+}
+
+.tree-item {
+  display: block;
+  padding: 3px 6px;
+  cursor: pointer;
+  border-radius: 3px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  user-select: none;
+}
+
+.tree-item:hover {
+  background: var(--surface-2);
+}
+
+.tree-item.active {
+  background: var(--surface-2);
+  color: var(--accent);
+}
+
+.tree-children {
+  padding-left: 10px;
+  display: none;
+}
+
+/* ============================================================
+   Context menu (file tree + video right-click)
+   ============================================================ */
+.context-menu {
+  position: fixed;
+  z-index: 10000;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 0;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  min-width: 160px;
+  font-size: 13px;
+}
+
+.context-menu-header {
+  padding: 4px 12px;
+  color: var(--muted);
+  font-size: 0.8em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.context-menu-item {
+  padding: 6px 12px;
+  cursor: pointer;
+  color: var(--text);
+}
+
+.context-menu-item:hover {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+.context-menu-item.active {
+  color: var(--accent);
+}
+
+/* ============================================================
+   Outline treeview (right)
+   ============================================================ */
+.outline-pane {
+  padding: 8px;
+  font-size: 13px;
+  overflow: auto;
+  height: 100%;
+  color: var(--muted);
+}
+
+.outline-node {
+  display: flex;
+  flex-direction: column;
+}
+
+.outline-row {
+  display: flex;
+  align-items: center;
+  padding: 3px 6px;
+  cursor: pointer;
+  border-radius: 3px;
+  color: var(--text);
+  border-left: 2px solid transparent;
+  user-select: none;
+}
+
+.outline-row:hover {
+  background: var(--surface-2);
+  color: var(--accent);
+}
+
+.outline-row.active {
+  background: var(--surface-2);
+  color: var(--accent);
+  border-left-color: var(--accent);
+  font-weight: 600;
+}
+
+.outline-arrow {
+  display: inline-block;
+  width: 14px;
+  font-size: 0.8em;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.outline-arrow-empty {
+  visibility: hidden;
+}
+
+.outline-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.outline-children {
+  padding-left: 10px;
+}
+
+.outline-pin .outline-label {
+  color: #eab308;
+  font-style: italic;
+}
+
+.outline-pin.active .outline-label {
+  color: #facc15;
+}
+
+.outline-pin.active {
+  border-left-color: #eab308;
+}
+
+/* ============================================================
+   Command palette (Ctrl+Shift+P)
+   ============================================================ */
+.cmd-palette-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 15vh;
+}
+
+.cmd-palette {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  width: 520px;
+  max-width: 90vw;
+  overflow: hidden;
+}
+
+.cmd-palette input {
+  width: 100%;
+  padding: 14px 18px;
+  background: var(--surface);
+  color: var(--text);
+  border: none;
+  border-bottom: 1px solid var(--border);
+  outline: none;
+  font-family: inherit;
+  font-size: 1em;
+}
+
+.cmd-palette-list {
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.cmd-palette-empty {
+  padding: 20px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9em;
+}
+
+/* ============================================================
+   Golden Layout overrides + smooth drag
+   ============================================================ */
+.lm_goldenlayout {
+  background: var(--bg);
+}
+
+.lm_header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.lm_tab {
+  color: var(--muted);
+  background: transparent;
+}
+
+.lm_tab.lm_active {
+  color: var(--text);
+  background: var(--bg);
+}
+
+.lm_content {
+  background: var(--bg);
+}
+
+.lm_splitter {
+  background: var(--border);
+  transition: background 120ms;
+}
+
+.lm_splitter:hover {
+  background: var(--accent);
+}
+
+.lm_dragProxy {
+  opacity: 0.7;
+  border: 2px dashed var(--accent) !important;
+  border-radius: 4px;
+  background: var(--surface) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.65);
+  transition: opacity 100ms, box-shadow 100ms;
+}
+
+.lm_dropTargetIndicator {
+  background: rgba(86, 156, 214, 0.15) !important;
+  border: 2px dashed var(--accent) !important;
+  border-radius: 4px;
+  transition: background 80ms, border-color 80ms;
+}
+
+body.lm_dragging .lm_content > * {
+  pointer-events: none;
+}
+
+/* ============================================================
+   Scrollbars
+   ============================================================ */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+}
