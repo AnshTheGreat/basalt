@@ -1,9 +1,10 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.yourname.basalt',
+  appId: 'com.anshthegreat.basalt',
   appName: 'Basalt',
-  webDir: 'dist'
+  // electron-forge's Vite plugin outputs the renderer here
+  webDir: '.vite/renderer/main_window',
 };
 
 export default config;

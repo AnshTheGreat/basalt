@@ -19,122 +19,74 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build web assets
-        run: npm run build --if-present
-
-      - name: Build portable .exe
-        run: npx electron-builder --win portable
+      - run: npm ci
+      # 1. Build and package with electron-forge
+      - run: npm run package
+      # 2. Package the output with electron-builder into a portable .exe
+      - run: npx electron-builder --win portable --prepackaged out/basalt-win32-x64
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: basalt-windows-portable
           path: dist/*.exe
 
   # ──────────────────────────────────────────────
-  # Linux: AppImage (single file)
+  # Linux: AppImage
   # ──────────────────────────────────────────────
   build-linux:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-
-      # mold helps only if you have native modules
-      - name: Install mold
-        run: sudo apt-get update && sudo apt-get install -y mold
-
-      - name: Setup sccache
-        uses: mozilla-actions/sccache-action@v0.0.9
-
-      - name: Configure sccache
-        run: |
-          echo "SCCACHE_GHA_ENABLED=true" >> "$GITHUB_ENV"
-          echo "RUSTC_WRAPPER=sccache" >> "$GITHUB_ENV"
-          echo "CC=sccache gcc" >> "$GITHUB_ENV"
-          echo "CXX=sccache g++" >> "$GITHUB_ENV"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build web assets
-        run: npm run build --if-present
-
-      - name: Build AppImage
-        run: npx electron-builder --linux AppImage
+      - run: npm ci
+      # 1. Build and package with electron-forge
+      - run: npm run package
+      # 2. Package the output with electron-builder into an AppImage
+      - run: npx electron-builder --linux AppImage --prepackaged out/basalt-linux-x64
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: basalt-linux-appimage
           path: dist/*.AppImage
 
   # ──────────────────────────────────────────────
   # Android: APK via Capacitor 8
-  # REQUIRES: JDK 21, Node 22, Android SDK 36
   # ──────────────────────────────────────────────
   build-android:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-
-      # Capacitor 8 requires JDK 21
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "21"
-
-      # Pin packages to avoid the removed 'tools' package failure
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+      - uses: android-actions/setup-android@v3
         with:
           packages: "platform-tools"
-
-      # Capacitor 8 targets Android SDK 36
-      - name: Install Android SDK platform and build-tools
-        run: |
-          sdkmanager "platforms;android-36" "build-tools;36.0.0"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build web assets
-        run: npm run build --if-present
-
-      - name: Sync Capacitor Android
-        run: npx cap sync android
-
-      - name: Build release APK
-        run: |
+      - run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
+      - run: npm ci
+      # electron-forge's package command also runs the Vite build,
+      # which is what Capacitor needs
+      - run: npm run package
+      - run: npx cap sync android
+      - run: |
           cd android
           chmod +x gradlew
           ./gradlew assembleRelease
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: basalt-android-apk
           path: android/app/build/outputs/apk/release/*.apk
@@ -152,9 +104,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           path: artifacts
-
-      - name: Create Release
-        uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v2
         with:
           files: |
             artifacts/**/*.exe
