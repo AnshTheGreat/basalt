@@ -11,6 +11,10 @@ on:
 env:
   NODE_VERSION: 22
 
+# Explicit least-privilege default. Individual jobs opt into more below.
+permissions:
+  contents: read
+
 jobs:
   # ──────────────────────────────────────────────
   # Windows: portable single .exe
@@ -24,9 +28,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
       - run: npm ci
-      # 1. Build and package with electron-forge
       - run: npm run package
-      # 2. Package the output with electron-builder into a portable .exe
       - run: npx electron-builder --win portable --prepackaged out/basalt-win32-x64
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -34,6 +36,7 @@ jobs:
         with:
           name: basalt-windows-portable
           path: dist/*.exe
+          if-no-files-found: error
 
   # ──────────────────────────────────────────────
   # Linux: AppImage
@@ -47,9 +50,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
       - run: npm ci
-      # 1. Build and package with electron-forge
       - run: npm run package
-      # 2. Package the output with electron-builder into an AppImage
       - run: npx electron-builder --linux AppImage --prepackaged out/basalt-linux-x64
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -57,45 +58,46 @@ jobs:
         with:
           name: basalt-linux-appimage
           path: dist/*.AppImage
+          if-no-files-found: error
 
   # ──────────────────────────────────────────────
-  # Android: APK via Capacitor 8
+  # macOS: DMG (Intel x64 — runs on Apple Silicon via Rosetta 2)
+  #
+  # We build on macos-13 (Intel) so the resulting .app runs natively
+  # on Intel Macs and via Rosetta 2 on M1/M2/M3. If you'd rather have
+  # a native ARM build, change the runner to macos-latest and the
+  # --prepackaged path to out/basalt-darwin-arm64.
+  #
+  # No code signing cert is configured, so CSC_IDENTITY_AUTO_DISCOVERY
+  # is disabled to keep electron-builder from trying (and failing) to
+  # sign. Users will need to right-click → Open the first time.
   # ──────────────────────────────────────────────
-  build-android:
-    runs-on: ubuntu-latest
+  build-macos:
+    runs-on: macos-13
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: false
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "21"
-      - uses: android-actions/setup-android@v3
-        with:
-          packages: "platform-tools"
-      - run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
       - run: npm ci
-      # electron-forge's package command also runs the Vite build,
-      # which is what Capacitor needs
       - run: npm run package
-      - run: npx cap sync android
-      - run: |
-          cd android
-          chmod +x gradlew
-          ./gradlew assembleRelease
+      - run: npx electron-builder --mac dmg --prepackaged out/basalt-darwin-x64
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/upload-artifact@v4
         with:
-          name: basalt-android-apk
-          path: android/app/build/outputs/apk/release/*.apk
+          name: basalt-macos-dmg
+          path: dist/*.dmg
+          if-no-files-found: error
 
   # ──────────────────────────────────────────────
-  # Release (only on version tags)
+  # Release (only on version tags like v1.0.0)
   # ──────────────────────────────────────────────
   release:
-    needs: [build-windows, build-linux, build-android]
+    needs: [build-windows, build-linux, build-macos]
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:
@@ -104,10 +106,13 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           path: artifacts
+      - name: List downloaded artifacts
+        run: find artifacts -type f | sort
       - uses: softprops/action-gh-release@v2
         with:
           files: |
             artifacts/**/*.exe
             artifacts/**/*.AppImage
-            artifacts/**/*.apk
+            artifacts/**/*.dmg
           generate_release_notes: true
+          fail_on_unmatched_files: true
