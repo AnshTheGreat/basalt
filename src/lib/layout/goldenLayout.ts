@@ -1,4 +1,4 @@
-import { GoldenLayout, LayoutConfig } from 'golden-layout';
+import type { ComponentContainer } from 'golden-layout';
 import { createEditorPane } from '../panes/editorPane';
 import { createFileTreePane } from '../panes/fileTreePane';
 import { createOutlinePane } from '../panes/outlinePane';
@@ -15,60 +15,105 @@ function findFirstMd(tree: FileNode[]): string | null {
   return null;
 }
 
+function makePane(cls: string, pane: string): HTMLElement {
+  const el = document.createElement('div');
+  el.className = `basalt-pane ${cls}`;
+  el.dataset.pane = pane;
+  return el;
+}
+
+function makeSplitter(): HTMLElement {
+  const el = document.createElement('div');
+  el.className = 'basalt-splitter';
+  return el;
+}
+
+export function toggleFileTree() {
+  const pane = document.querySelector('.basalt-pane-filetree') as HTMLElement | null;
+  if (!pane) return;
+
+  const hidden = pane.dataset.hidden === '1';
+
+  if (hidden) {
+    pane.dataset.hidden = '0';
+    pane.style.display = '';
+    const splitter = pane.nextElementSibling as HTMLElement | null;
+    if (splitter && splitter.classList.contains('basalt-splitter')) {
+      splitter.style.display = '';
+    }
+    requestAnimationFrame(() => {
+      const tree = pane.querySelector('.tree-pane') as HTMLElement | null;
+      tree?.focus();
+    });
+  } else {
+    pane.dataset.hidden = '1';
+    pane.style.display = 'none';
+    const splitter = pane.nextElementSibling as HTMLElement | null;
+    if (splitter && splitter.classList.contains('basalt-splitter')) {
+      splitter.style.display = 'none';
+    }
+  }
+}
+
+export function toggleOutline() {
+  const pane = document.querySelector('.basalt-pane-outline') as HTMLElement | null;
+  if (!pane) return;
+
+  const hidden = pane.dataset.hidden === '1';
+
+  if (hidden) {
+    pane.dataset.hidden = '0';
+    pane.style.display = '';
+    const splitter = pane.previousElementSibling as HTMLElement | null;
+    if (splitter && splitter.classList.contains('basalt-splitter')) {
+      splitter.style.display = '';
+    }
+  } else {
+    pane.dataset.hidden = '1';
+    pane.style.display = 'none';
+    const splitter = pane.previousElementSibling as HTMLElement | null;
+    if (splitter && splitter.classList.contains('basalt-splitter')) {
+      splitter.style.display = 'none';
+    }
+  }
+}
+
 export async function initLayout() {
   const hasVault = await loadVault();
   if (!hasVault) {
-    await showVaultWizard();
+    const ok = await showVaultWizard();
+    if (!ok) return;
     if (!(await loadVault())) return;
   }
 
   const container = document.getElementById('layout-root')!;
-  const layout = new GoldenLayout(container);
+  container.innerHTML = '';
+  container.className = 'basalt-layout';
 
-  layout.registerComponentFactoryFunction('filetree', createFileTreePane);
-  layout.registerComponentFactoryFunction('editor', createEditorPane);
-  layout.registerComponentFactoryFunction('outline', createOutlinePane);
+  const filetreePane = makePane('basalt-pane-filetree', 'filetree');
+  const splitter1 = makeSplitter();
+  const editorPane = makePane('basalt-pane-editor', 'editor');
+  const splitter2 = makeSplitter();
+  const outlinePane = makePane('basalt-pane-outline', 'outline');
 
-  const config: LayoutConfig = {
-    root: {
-      type: 'row',
-      content: [
-        {
-          type: 'column',
-          width: 18,
-          content: [
-            { type: 'component', componentType: 'filetree', title: 'Vault', isClosable: false, reorderEnabled: true },
-          ],
-        },
-        {
-          type: 'component',
-          componentType: 'editor',
-          title: 'Editor',
-          width: 64,
-          isClosable: false,
-          reorderEnabled: true,
-        },
-        {
-          type: 'column',
-          width: 18,
-          content: [
-            { type: 'component', componentType: 'outline', title: 'Outline', isClosable: false, reorderEnabled: true },
-          ],
-        },
-      ],
-    },
-  };
-  layout.loadLayout(config);
+  container.appendChild(filetreePane);
+  container.appendChild(splitter1);
+  container.appendChild(editorPane);
+  container.appendChild(splitter2);
+  container.appendChild(outlinePane);
 
-  // Safety net — GLv2 has a ResizeObserver internally, but some Electron
-  // builds need an explicit nudge on window resize.
-  window.addEventListener('resize', () => {
-    requestAnimationFrame(() => {
-      const anyLayout = layout as any;
-      try { anyLayout.updateRootSize?.(); } catch { /* ignore */ }
-      try { anyLayout.updateSize?.(); } catch { /* ignore */ }
-    });
-  });
+  createFileTreePane({ element: filetreePane } as unknown as ComponentContainer);
+  createEditorPane({ element: editorPane } as unknown as ComponentContainer);
+  createOutlinePane({ element: outlinePane } as unknown as ComponentContainer);
+
+  // Both side panes are hidden by default
+  filetreePane.dataset.hidden = '1';
+  filetreePane.style.display = 'none';
+  splitter1.style.display = 'none';
+
+  outlinePane.dataset.hidden = '1';
+  outlinePane.style.display = 'none';
+  splitter2.style.display = 'none';
 
   const first = findFirstMd(state.tree);
   if (first) await openFile(first);

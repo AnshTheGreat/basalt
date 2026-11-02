@@ -6,6 +6,7 @@ contextBridge.exposeInMainWorld('vaultAPI', {
   createVault: () => ipcRenderer.invoke('vault:create'),
   listFiles: () => ipcRenderer.invoke('vault:list'),
   readFile: (p: string) => ipcRenderer.invoke('vault:read', p),
+  readBinary: (p: string) => ipcRenderer.invoke('vault:readBinary', p),
   writeFile: (p: string, c: string) => ipcRenderer.invoke('vault:write', p, c),
   writeBinary: (p: string, b: ArrayBuffer) => ipcRenderer.invoke('vault:writeBinary', p, b),
   createFile: (p: string) => ipcRenderer.invoke('vault:createFile', p),

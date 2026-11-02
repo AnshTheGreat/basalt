@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog, protocol, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, protocol, shell, Menu } from 'electron';
 import path from 'node:path';
 import fs from 'node:fs';
 import { transcodeToMp4, extractThumbnail } from './ffmpeg';
@@ -44,14 +44,21 @@ function safeAbs(rel: string): string {
 const MIME: Record<string, string> = {
   png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif',
   webp: 'image/webp', svg: 'image/svg+xml', bmp: 'image/bmp',
-  mp3: 'audio/mpeg', wav: 'audio/wav', ogg: 'audio/ogg', m4a: 'audio/mp4', aac: 'audio/aac',
-  mp4: 'video/mp4', webm: 'video/webm', mov: 'video/quicktime', mkv: 'video/x-matroska',
+  tif: 'image/tiff', tiff: 'image/tiff', ico: 'image/x-icon', avif: 'image/avif',
+  mp3: 'audio/mpeg', wav: 'audio/wav', ogg: 'audio/ogg', m4a: 'audio/mp4',
+  aac: 'audio/aac', opus: 'audio/opus', flac: 'audio/flac',
+  mp4: 'video/mp4', webm: 'video/webm', mov: 'video/quicktime',
+  mkv: 'video/x-matroska', ogv: 'video/ogg', m4v: 'video/mp4',
+  pdf: 'application/pdf',
+  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  zip: 'application/zip',
 };
 
 function setupIpc() {
   ipcMain.handle('vault:get', () => currentVaultPath);
   ipcMain.handle('vault:choose', async () => {
-    const r = await dialog.showOpenDialog({ properties: ['openDirectory'] });
+    const r = await dialog.showOpenDialog({ properties: ['openDirectory', 'createDirectory'] });
     if (r.canceled || !r.filePaths[0]) return null;
     currentVaultPath = r.filePaths[0];
     saveConfig({ vaultPath: currentVaultPath });
@@ -72,6 +79,12 @@ function setupIpc() {
   ipcMain.handle('vault:read', async (_e, rel: string) => {
     if (!currentVaultPath) return '';
     return await fs.promises.readFile(safeAbs(rel), 'utf-8');
+  });
+  ipcMain.handle('vault:readBinary', async (_e, rel: string) => {
+    if (!currentVaultPath) throw new Error('No vault');
+    const abs = safeAbs(rel);
+    const buf = await fs.promises.readFile(abs);
+    return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
   });
   ipcMain.handle('vault:write', async (_e, rel: string, content: string) => {
     if (!currentVaultPath) return;
@@ -124,9 +137,7 @@ function setupIpc() {
     const buf = await fs.promises.readFile(abs);
     const ext = abs.split('.').pop()?.toLowerCase() || '';
     const mime = MIME[ext] || 'application/octet-stream';
-    const dataUrl = `data:${mime};base64,${buf.toString('base64')}`;
-    console.log('[image]', rel, ext, buf.length, dataUrl.slice(0, 40));
-    return dataUrl;
+    return `data:${mime};base64,${buf.toString('base64')}`;
   });
 
   ipcMain.handle('ffmpeg:transcode', async (_e, input: string, output: string) => {
@@ -150,8 +161,14 @@ function setupIpc() {
 
 function createWindow() {
   const win = new BrowserWindow({
-    width: 1400, height: 900, backgroundColor: '#1e1e1e',
-    webPreferences: { preload: path.join(__dirname, 'preload.cjs') },
+    width: 1400,
+    height: 900,
+    backgroundColor: '#1e1e1e',
+    autoHideMenuBar: true,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.cjs'),
+      plugins: true,
+    },
   });
   win.webContents.setWindowOpenHandler(({ url }) => {
     if (url.startsWith('http:') || url.startsWith('https:')) shell.openExternal(url);
@@ -165,17 +182,26 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
-  // Point mediaforge at bundled ffmpeg/ffprobe if available
+  if (process.platform !== 'darwin') {
+    Menu.setApplicationMenu(null);
+  } else {
+    const template: Electron.MenuItemConstructorOptions[] = [
+      { label: app.name, submenu: [{ role: 'about' }, { type: 'separator' }, { role: 'quit' }] },
+      { role: 'editMenu' },
+    ];
+    Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+  }
+
   try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const ffmpegStatic = require('ffmpeg-static');
     if (ffmpegStatic) process.env.FFMPEG_PATH = ffmpegStatic;
-  } catch { /* ffmpeg-static not installed — use system PATH */ }
+  } catch { /* not installed */ }
   try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const ffprobeStatic = require('ffprobe-static');
     if (ffprobeStatic?.path) process.env.FFPROBE_PATH = ffprobeStatic.path;
-  } catch { /* ffprobe-static not installed — use system PATH */ }
+  } catch { /* not installed */ }
 
   currentVaultPath = loadConfig().vaultPath;
   setupIpc();
@@ -189,7 +215,10 @@ app.whenReady().then(() => {
       const data = await fs.promises.readFile(abs);
       const ext = abs.split('.').pop()?.toLowerCase() || '';
       return new Response(new Uint8Array(data), {
-        headers: { 'Content-Type': MIME[ext] || 'application/octet-stream' },
+        headers: {
+          'Content-Type': MIME[ext] || 'application/octet-stream',
+          'Accept-Ranges': 'bytes',
+        },
       });
     } catch {
       return new Response('Not found', { status: 404 });

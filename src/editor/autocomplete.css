@@ -1,0 +1,63 @@
+/* ============================================================
+   Slash-command autocomplete — matches the app's widget style.
+   Two stacked boxes: options list on top, description box below.
+   ============================================================ */
+.cm-tooltip.cm-tooltip-autocomplete {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 0 !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55) !important;
+  padding: 0 !important;
+  overflow: hidden;
+  font-family: 'Fira Code', monospace !important;
+  font-size: 0.88em !important;
+  display: flex !important;
+  flex-direction: column;
+}
+
+.cm-tooltip.cm-tooltip-autocomplete > ul {
+  padding: 4px !important;
+  max-height: 220px !important;
+  margin: 0 !important;
+  border-bottom: 1px solid var(--border) !important;
+  background: var(--surface) !important;
+}
+
+.cm-tooltip.cm-tooltip-autocomplete > ul > li {
+  padding: 6px 10px !important;
+  border-radius: 0 !important;
+  color: var(--text) !important;
+  font-style: italic !important;
+  line-height: 1.4 !important;
+}
+
+.cm-tooltip.cm-tooltip-autocomplete > ul > li[aria-selected] {
+  background: var(--accent) !important;
+  color: var(--bg) !important;
+}
+
+.cm-tooltip.cm-tooltip-autocomplete > ul > li .cm-completionLabel {
+  font-weight: 500;
+}
+
+.cm-tooltip.cm-tooltip-autocomplete > ul > li .cm-completionMatchedText {
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.cm-tooltip.cm-tooltip-autocomplete .cm-completionInfo {
+  position: static !important;
+  background: var(--surface-2) !important;
+  color: var(--muted) !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 8px 12px !important;
+  font-size: 0.85em !important;
+  max-width: none !important;
+  margin: 0 !important;
+  display: block !important;
+  width: 100% !important;
+  box-sizing: border-box;
+  font-style: italic !important;
+  min-height: 2.2em !important;
+}

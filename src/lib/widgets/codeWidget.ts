@@ -3,21 +3,30 @@ import hljs from 'highlight.js';
 
 function highlight(code: string, lang: string): string {
   try {
-    return lang
-      ? hljs.highlight(code, { language: lang }).value
-      : hljs.highlightAuto(code).value;
+    return lang ? hljs.highlight(code, { language: lang }).value : hljs.highlightAuto(code).value;
   } catch {
     return code.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]!));
   }
 }
 
+/** Insert plain text (with newlines) at the current cursor in a contenteditable. */
+function insertTextAtCursor(text: string) {
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) return;
+  const range = sel.getRangeAt(0);
+  range.deleteContents();
+  const tn = document.createTextNode(text);
+  range.insertNode(tn);
+  range.setStartAfter(tn);
+  range.collapse(true);
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
+
 export class CodeWidget extends WidgetType {
-  constructor(
-    readonly lang: string,
-    readonly code: string,
-    readonly from: number,
-    readonly to: number,
-  ) { super(); }
+  constructor(readonly lang: string, readonly code: string, readonly from: number, readonly to: number) {
+    super();
+  }
 
   eq(o: WidgetType) {
     return o instanceof CodeWidget && o.lang === this.lang && o.code === this.code &&
@@ -30,7 +39,6 @@ export class CodeWidget extends WidgetType {
     container.addEventListener('mousedown', (e) => e.stopPropagation());
     container.addEventListener('click', (e) => e.stopPropagation());
 
-    // Header: [toggle] [lang] [copy]
     const header = document.createElement('div');
     header.className = 'cm-code-header';
 
@@ -51,7 +59,6 @@ export class CodeWidget extends WidgetType {
     header.appendChild(langLabel);
     header.appendChild(copyBtn);
 
-    // Body: editable <pre><code>
     const pre = document.createElement('pre');
     const codeEl = document.createElement('code');
     codeEl.innerHTML = highlight(this.code, this.lang);
@@ -74,41 +81,44 @@ export class CodeWidget extends WidgetType {
       });
     });
 
-    // Debounced sync: while editing, push the new code into the document.
-    // This ensures the state field always has the latest source, so when
-    // the cursor leaves the line the widget rebuilds with the new content.
-    let syncTimer: number | null = null;
+    // Enter inserts a literal \n text node (never a <div>/<br>), so
+    // textContent always returns the newlines the user typed.
+    codeEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        e.stopPropagation();
+        insertTextAtCursor('\n');
+      }
+    });
+
+    // Paste inserts plain text with \n intact.
+    codeEl.addEventListener('paste', (e) => {
+      e.preventDefault();
+      const text = e.clipboardData?.getData('text/plain') || '';
+      if (!text) return;
+      insertTextAtCursor(text);
+    });
+
+    // Sync only on blur or when a save is triggered, so editing never
+    // causes a widget rebuild mid-edit (which would steal the caret).
     const sync = () => {
-      if (syncTimer !== null) window.clearTimeout(syncTimer);
-      syncTimer = window.setTimeout(() => {
-        const newCode = codeEl.textContent || '';
-        if (newCode !== this.code) {
-          const safe = newCode.replace(/'/g, "\\'");
-          const newText = `code'${this.lang}'_'${safe}'`;
-          try {
-            view.dispatch({ changes: { from: this.from, to: this.to, insert: newText } });
-          } catch { /* stale range — ignore */ }
-        }
-      }, 300);
+      const newCode = codeEl.textContent || '';
+      if (newCode === this.code) return;
+      const safe = newCode.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+      const newText = `code"${this.lang}"_"${safe}"`;
+      try {
+        view.dispatch({ changes: { from: this.from, to: this.to, insert: newText } });
+      } catch { /* stale range */ }
     };
 
-    codeEl.addEventListener('input', sync);
-
-    // Restore highlight when the cell loses focus
     codeEl.addEventListener('blur', () => {
-      if (syncTimer !== null) { window.clearTimeout(syncTimer); syncTimer = null; }
-      const newCode = codeEl.textContent || '';
-      if (newCode !== this.code) {
-        const safe = newCode.replace(/'/g, "\\'");
-        const newText = `code'${this.lang}'_'${safe}'`;
-        try {
-          view.dispatch({ changes: { from: this.from, to: this.to, insert: newText } });
-        } catch { /* stale */ }
-      } else {
-        // No change — just re-highlight the raw text
+      sync();
+      if (codeEl.textContent === this.code) {
         codeEl.innerHTML = highlight(this.code, this.lang);
       }
     });
+
+    container.addEventListener('basalt:save', () => { sync(); });
 
     container.appendChild(header);
     container.appendChild(pre);

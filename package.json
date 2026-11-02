@@ -59,9 +59,12 @@
     "ffprobe-static": "^3.1.0",
     "golden-layout": "^2.6.0",
     "highlight.js": "^11.12.0",
+    "jszip": "^3.10.1",
     "katex": "^0.19.1",
+    "mammoth": "^1.8.0",
     "mediaforge": "^2.2.0",
     "react": "^19.3.1",
-    "react-dom": "^19.3.1"
+    "react-dom": "^19.3.1",
+    "xlsx": "^0.18.5"
   }
 }

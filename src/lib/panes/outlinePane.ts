@@ -1,4 +1,4 @@
-import { ComponentContainer } from 'golden-layout';
+import type { ComponentContainer } from 'golden-layout';
 
 export interface OutlineItem {
   level: number;
@@ -15,7 +15,7 @@ let navigator: ((line: number) => void) | null = null;
 let renderedRows: Array<{ el: HTMLElement; line: number }> = [];
 let activeLine = -1;
 
-const PIN_RE = /(?<![A-Za-z0-9_])p'([^'\n]*)'/g;
+const PIN_RE = /(?<![A-Za-z0-9_])pin"([^"\n]*)"/g;
 const collapsed = new Set<string>();
 
 export function parseHeadings(doc: string): OutlineItem[] {
@@ -53,7 +53,6 @@ export function setActiveLine(line: number) {
     if (r.line <= line) bestLine = r.line;
     else break;
   }
-
   for (const r of renderedRows) {
     if (r.line === bestLine) r.el.classList.add('active');
     else r.el.classList.remove('active');
@@ -89,12 +88,8 @@ function renderNode(node: TreeNode): HTMLElement {
 
   const arrow = document.createElement('span');
   arrow.className = 'outline-arrow';
-  if (node.children.length > 0) {
-    arrow.textContent = collapsed.has(node.item.text) ? '▸' : '▾';
-  } else {
-    arrow.textContent = '';
-    arrow.classList.add('outline-arrow-empty');
-  }
+  if (node.children.length > 0) arrow.textContent = collapsed.has(node.item.text) ? '▸' : '▾';
+  else { arrow.textContent = ''; arrow.classList.add('outline-arrow-empty'); }
   row.appendChild(arrow);
 
   const label = document.createElement('span');
@@ -124,13 +119,9 @@ function renderNode(node: TreeNode): HTMLElement {
           childBox.style.display = 'none';
           arrow.textContent = '▸';
         }
-      } else {
-        navigator?.(node.item.line);
-      }
+      } else navigator?.(node.item.line);
     });
-  } else {
-    row.addEventListener('click', () => navigator?.(node.item.line));
-  }
+  } else row.addEventListener('click', () => navigator?.(node.item.line));
 
   return container;
 }
@@ -143,10 +134,7 @@ export function createOutlinePane(container: ComponentContainer) {
   subscribeOutline((items) => {
     div.innerHTML = '';
     renderedRows = [];
-    if (items.length === 0) {
-      div.textContent = 'No headings';
-      return;
-    }
+    if (items.length === 0) { div.textContent = 'No headings'; return; }
     const tree = buildTree(items);
     for (const root of tree) div.appendChild(renderNode(root));
     const cur = activeLine;

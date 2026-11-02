@@ -1,90 +1,157 @@
-# Basalt — Complete Example
+# Basalt — Complete Feature Guide
 
-Move the cursor onto a line to reveal its raw source. Move it away to see the rendered version.
-
----
-
-## Headings (1–10)
-
-# Level 1
-## Level 2
-### Level 3
-#### Level 4
-##### Level 5
-###### Level 6
-####### Level 7
-######## Level 8
-######### Level 9
-########## Level 10
-
-The right-hand outline shows these as a collapsible tree. Hover any line and the matching outline entry highlights.
+This file demonstrates every feature in Basalt. Read it top to bottom and you'll know the whole app in under 10 minutes.
 
 ---
 
-## Inline formatting
+## 1. Headings
 
-b'bold'  i'italic'  u'underline'  -'strikethrough'  h'highlight'
+Ten levels, largest to smallest.
 
-Combine flags in any order inside a single pair of quotes:
-
-bi'bold + italic'
-bu'bold + underline'
-bui'bold + underline + italic'
-hb'highlight + bold'
-buish'bold + underline + italic + strike + highlight'
-
-Escaped quote: b'it\'s fine'
-
----
-
-## Superscript and subscript
-
-E = mc^'2'
-H~'2'O
-x^'n' + y~'i'
+# Heading 1
+## Heading 2
+### Heading 3
+#### Heading 4
+##### Heading 5
+###### Heading 6
+####### Heading 7
+######## Heading 8
+######### Heading 9
+########## Heading 10
 
 ---
 
-## Math
+## 2. Inline formatting
 
-$'E = mc^2'
-$'\int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}'
-$'\sum_{i=1}^{n} i = \frac{n(n+1)}{2}'
-$'\lim_{x \to 0} \frac{\sin x}{x} = 1'
+Prefix the text with flag letters and wrap it in double quotes.
 
-When the cursor is on a line containing math, a rendered preview appears above it.
+- b"bold"
+- i"italic"
+- u"underline"
+- s"strikethrough"
+- h"highlight"
 
----
+Stack flags by combining letters in any order:
 
-## Links
-
-l'OpenAI'_'https://openai.com'
-l'Anthropic'_'https://anthropic.com'
-l'GitHub'_'https://github.com'
-
-Click any link — it opens in your default browser.
+- bi"bold italic"
+- biu"bold italic underlined"
+- hb"highlight and bold"
+- biush"everything stacked"
 
 ---
 
-## Comments
+## 3. Super and subscript
 
-c'This text is hidden until you click on this line'
-The line above looks empty — click it and the comment appears.
+Use ^ for superscript and ~ for subscript.
 
-c'Second hidden comment'
-Visible only on the cursor line.
-
----
-
-## Pins
-
-p'Important section' This line has a pin. It appears as 📌 in the outline pane on the right.
-
-p'Second pin' Pins are useful for marking positions you jump back to.
+- H~"2"O (water)
+- E = mc^"2"
+- x^"2" + y^"2" = z^"2"
 
 ---
 
-## Bullet lists
+## 4. Comments
+
+Wrapping in [comment and double quotes] renders as a faint ellipsis that expands on hover.
+
+comment"This text is hidden until you hover it."
+
+---
+
+## 5. Pins
+
+A pin adds an entry to the outline pane on the right.
+
+pin"Getting Started"
+pin"Working with Media"
+
+Open the outline with Ctrl+] and click a pin to jump to it.
+
+---
+
+## 6. Math
+
+Inline LaTeX via latex. Rendered with KaTeX as soon as the cursor leaves the line.
+
+- latex"E = mc^2"
+- latex"a^2 + b^2 = c^2"
+- latex"\int_0^1 x^2 dx = \frac{1}{3}"
+
+When your cursor is on a line containing math, a preview strip appears above it.
+
+---
+
+## 7. Colors
+
+Open with //color-"color_name" close with //color-reset{/}.
+
+- {r}Red{/}
+- {g}Green{/}
+- {b}Blue{/}
+- {y}Yellow{/}
+- {c}Cyan{/}
+- {m}Magenta{/}
+
+Colors can be mixed mid-sentence: plain {r}red{/} plain {g}green{/} plain white.
+
+---
+
+## 8. Code blocks
+
+Syntax:
+
+code""_""
+code"javascript"_"function greet(name) {
+  return 'Hello, ' + name;
+}
+console.log(greet('Basalt'));"
+
+code"python"_"def fib(n):
+    a, b = 0, 1
+    while n:
+        yield a
+        a, b = b, a + b
+        n -= 1
+
+print(list(fib(10)))"
+
+code"rust"_"fn main() {
+    println!(\"hello from Rust\");
+}"
+
+Each block has a collapse toggle, language name, and Copy button.
+
+---
+
+## 9. Tables
+
+Two ways to create one: type //table and press space, or paste a markdown table.
+
+| Feature | Syntax | Kind |
+|---|---|---|
+| Bold | b"text" | inline |
+| Math | latex"…" | inline |
+| Comment | comment"…" | inline |
+| Code | code"lang"_"body" | block |
+| Divider | --- | block |
+
+Click any cell to edit. Drag the bottom-right corner to resize. Use the +/- bars for adding/removing rows and columns.
+
+---
+
+## 10. Dividers
+
+Three or more hyphens on their own line.
+
+"---"
+
+---
+
+---
+
+## 11. Bullets
+
+Leading hyphens control depth. The count of hyphens equals nesting level.
 
 - Level 1
 -- Level 2
@@ -97,194 +164,142 @@ p'Second pin' Pins are useful for marking positions you jump back to.
 --------- Level 9
 ---------- Level 10
 
-Every bullet uses the same `•` glyph — only the indent changes.
-
-Press Enter at the end of any bullet to continue at the same level.
-
-Press Enter on an empty bullet to exit bullet mode.
+Enter on an empty bullet exits bullet mode.
 
 ---
 
-## Task lists
+## 12. Tasks
 
--[] Unchecked — click the box to check it
--[x] Completed
--[ ] With a space after the bracket
--[X] Uppercase X also works
+-[] Unchecked
+-[x] Checked
+-[] Click the checkbox to toggle
 
-Press Enter at the end of a task to add the next one below.
-
-Press Enter on an empty task line to exit task mode.
+Enter on an empty task exits task mode.
 
 ---
 
-## Divider
+## 13. Canvas
 
-Three or more hyphens on their own line become a horizontal rule.
+Insert by typing //canvas and pressing space. The canvas saves to attachments/.
 
----
+{canvas:attachments/canvas_demo.png}
 
-Like that one.
+Draw with the pencil. The **color wheel** on the left of the top row picks the base color. The **darkness slider** next to it goes white → base color → black; at pure white the pencil acts as an eraser. The live swatch on the right shows the effective color. The **size slider** on the second row sets the pencil width.
 
----
-
-## Code blocks
-
-code'js'_'function greet(name) {
-  return `Hello, ${name}!`;
-}
-console.log(greet("world"));'
-
-code'python'_'def fib(n):
-    if n < 2:
-        return n
-    return fib(n - 1) + fib(n - 2)
-
-print([fib(i) for i in range(10)])'
-
-code'rust'_'fn main() {
-    let x = 42;
-    println!("The answer is {}", x);
-}'
-
-Header layout is `[−] [LANG] [Copy]`. Click **−** to collapse. Click **Copy** to copy the source.
-
-Click inside a code block to edit it — the content becomes editable in place. Click away and it re-highlights. The markdown stays in sync because every keystroke is written back to the document.
+Drag the bottom-right corner of the canvas to resize it — the pixels stay 400×400 internally, so drawing stays crisp at any display size.
 
 ---
 
-## Embeds
+## 14. Embeds
 
-Drag any file from your desktop into the editor. Basalt copies it into `attachments/` inside your vault and inserts the embed line at the drop position.
-f'Photo'_'attachments/photo.png'_'220x60'
-### Image
-f'Photo'_'attachments/photo.png'_'220x60'
+Syntax: f"name"_"path" or f"name"_"path"_"WxH" to fix the size.
 
-Renders inline. The box has a native resize handle in the bottom-right corner. The size is saved back into the markdown as `f'name'_'path'_'WxH'`.
+Image: f"photo"_"attachments/sample.png"_"220x60"
 
-f'Photo'_'attachments/photo.png'_'220x60'yer that matches the rest of the theme.
+Audio: f"track"_"attachments/sample.mp3"
 
+Video: f"clip"_"attachments/sample.mp4"
 
+Drag a file from your OS onto the editor — Basalt copies it into attachments/ and writes the correct 
+f "…"_"…" line automatically.
 
-#f'Song'_'attachments/song.mp3'## Video
-
-Top bar shows the file name, bottom bar shows a progress rectangle. Click the video to play or pause. Right-click to change playback speed.
-f'Clip'_'attachments/clip.mp4'
-
-f'Clip'_'attachments/clip.mp4'
-### Any other file
-f'Clip'_'attachments/clip.mp4'f'
-
-You can also drag an embed within the document to move it, or drag a file from the left explorer pane into the editor.
+Videos have a custom player: click to play/pause, right-click for playback speed.
 
 ---
 
-## Table
+## 15. Slash commands
 
-Type `//table` + Space on an empty line, or write the pipes manually:
+Type // + command name + space.
 
-| Header 1 | Header 2 | Header 3 |
-|----------|----------|----------|
-| Cell     | Cell     | Cell     |
-| Cell     | Cell     | Cell     |
+- //table — 3-row table template
+- //date — today's date (DD-MM-YYYY)
+- //time — current time (HH:MM:SS AM/PM)
+- //canvas — drawing canvas
+- //color-red / //color-green / //color-blue / //color-yellow / //color-cyan / //color-magenta — start colored text
+- //color-white — reset text color (alias: //color-reset)
 
-Click any cell to edit. Click outside the table and the markdown updates.
-
-**Controls:**
-
-- `+` / `−` on the **bottom edge** add or remove rows
-- `+` / `−` on the **right edge** add or remove columns
-- Drag the diagonal grip at the bottom-right corner to resize every cell — width and height update live as you drag
+The autocomplete popup shows two stacked boxes: options on top, description below.
 
 ---
 
-## Canvas
+## 16. Keyboard shortcuts
 
-Type `//canvas` + Space on an empty line to insert a 400×400 drawing canvas.
-
-Toolbar sits at the top: pencil (✏), eraser (⌫), clear.
-
-Pencil draws thin black lines. Eraser draws thick white strokes. Every stroke is saved to `attachments/canvas_TIMESTAMP.png` inside your vault 200ms after you lift the mouse.
-
----
-{canvas:attachments/canvas_1793514141010.png}
-## Colors
-
-Type `//red` and press Space — everything after turns red until you type `//white` and press Space.
-
-//redThis text is red.//white
-
-//greenThis text is green.//white
-
-//blueThis text is blue.//white
-
-//yellowThis text is yellow.//white
-
-//cyanThis text is cyan.//white
-
-//magentaThis text is magenta.//white
-
-The `//color` and `//white` markers are invisible even on the cursor line. The cursor cannot land inside them — arrows and clicks jump over them.
+| Shortcut | Action |
+|---|---|
+| Ctrl+\\ | Command palette |
+| Ctrl+S | Save current file and flush canvases |
+| Ctrl+T | New empty tab |
+| Ctrl+W | Close current tab |
+| Ctrl+Tab / Ctrl+Shift+Tab | Next / previous tab |
+| Ctrl+[ | Hide / show the explorer pane |
+| Ctrl+] | Hide / show the outline pane |
+| Enter | Continue bullets / tasks |
+| " | Auto-close after a flag prefix |
 
 ---
 
-## Slash commands
+## 17. Command palette
 
-Type any of these on an empty line, then press Space:
+Open with Ctrl+\\ (backslash). Filter by typing, navigate with ↑↓, run with Enter, close with Esc.
 
-- `//table` → inserts a markdown table
-- `//canvas` → inserts a drawing canvas
-- `//date` → inserts today's date as dd-mm-yyyy
-- `//time` → inserts the current time as hh:mm:ss AM/PM
-- `//red`, `//green`, `//blue`, `//yellow`, `//cyan`, `//magenta` → start a colored region
-- `//white` → end a colored region
-
-The command text deletes itself the moment you press Space.
+- Change Vault — pick a new folder as your vault
+- New Note — create note_<number>.md in the current folder, then inline-rename
+- New Folder — create a folder in the current folder
+- Import File — open a file picker, insert an embed at the cursor
+- Rename Current File — rename the active file (name pre-selected up to .md)
+- Delete Current File — delete the active file
 
 ---
 
-## Command palette
+## 18. Explorer pane
 
-Press **Ctrl+Shift+P** (Windows/Linux) or **Cmd+Shift+P** (macOS) to open the command palette.
+Toggle the explorer with Ctrl+[
 
-Press Esc to close it. The cursor returns to exactly where it was before the palette opened.
+- ↑ / ↓ — navigate rows
+- → — open the selected folder
+- ← — close the selected folder
+- Enter on a folder — toggle open / closed
+- Enter on a file — open in the current tab
+- Insert or 0 — toggle the Rename / Delete menu
+- Right-click — same menu
 
----
-
-## File explorer
-
-Right-click any file or folder in the left pane:
-
-- **New File** — creates a file in the same folder
-- **New Folder** — creates a subfolder
-- **Rename** — renames the item
-- **Delete** — deletes the item (asks for confirmation)
-
-Right-click below the tree:
-
-- **New File at Root**
-- **New Folder at Root**
-
-Drag any file from the tree into the editor to embed it.
+Folders start closed. The active file is highlighted.
 
 ---
 
-## Editor behaviour
+## 19. Outline pane
 
-- Cursor on a line → that line shows raw source
-- Cursor away → rendered output
-- Editor is locked until a note is opened
-- `Ctrl+S` / `Cmd+S` forces a save
-- Unsaved changes auto-save after 500ms
-- Outline highlights whichever entry the mouse is currently over
-- Outline sections collapse with the arrow to their left
+Toggle with Ctrl+]. Shows headings (levels 1–10) and pins.
+
+- Click a row to jump to that line
+- Click a disclosure arrow to fold a section
 
 ---
 
-## Drag and drop
+## 20. File viewer
 
-- Drop a file from your OS → imported into `attachments/` and embedded at the cursor
-- Drag an embed within the doc → moves it
-- Drag from the explorer pane → embeds that file
-- Drag a Golden Layout pane tab → docks anywhere (ghost preview shows the target)
-- Drag a splitter → resizes adjacent panes
+Click any non-Markdown file in the explorer to view it.
+
+- Images: png, jpg, gif, webp, svg, bmp, ico, tiff, avif
+- Audio: mp3, wav, ogg, flac, m4a, aac, opus, wma, aiff
+- Video: mp4, webm, ogv natively; mkv/mov/avi via ffmpeg transcode
+- PDF: inline
+- Word (.docx): rendered as HTML via mammoth
+- Excel (.xlsx / .xls / .ods): each sheet as a table via SheetJS
+- Archives (.zip / .tar / .gz): file listing via JSZip
+- Text and code: opens in the CodeMirror editor
+
+---
+
+## 21. Saving
+
+Press Ctrl+S at any time. Basalt will:
+
+1. Save the current text file.
+2. Flush every on-screen canvas to disk.
+
+All embeds and canvases persist under attachments/ inside your vault.
+
+---
+
+*That's Basalt. Every feature above is live in this file — edit it, break it, learn it.*

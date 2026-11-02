@@ -1,0 +1,97 @@
+:root {
+  --bg: #1e1e1e;
+  --surface: #252526;
+  --surface-2: #2d2d30;
+  --text: #d4d4d4;
+  --muted: #858585;
+  --accent: #569cd6;
+  --border: #3c3c3c;
+  --highlight: #f4d47c44;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+#layout-root {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+/* ============================================================
+   Layout — plain flexbox, no Golden Layout
+   ============================================================ */
+.basalt-layout {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+.basalt-pane {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+  min-height: 0;
+}
+
+.basalt-pane-filetree {
+  flex: 0 0 18%;
+}
+
+.basalt-pane-editor {
+  flex: 1 1 auto;
+}
+
+.basalt-pane-outline {
+  flex: 0 0 18%;
+}
+
+.basalt-splitter {
+  flex: 0 0 4px;
+  background: var(--border);
+  cursor: col-resize;
+}
+
+.basalt-splitter:hover {
+  background: var(--accent);
+}
+
+/* ============================================================
+   Scrollbars
+   ============================================================ */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+}

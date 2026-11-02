@@ -1,0 +1,329 @@
+/* ============================================================
+   Math preview
+   ============================================================ */
+.cm-math-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 4px 8px;
+  margin: 2px 0 4px 0;
+  background: var(--surface-2);
+  border-left: 3px solid var(--accent);
+  font-size: 0.9em;
+}
+
+.cm-math-preview-item { color: #dcdcaa; }
+
+/* ============================================================
+   Code block
+   ============================================================ */
+.cm-code-block {
+  display: block;
+  margin: 6px 0;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.cm-code-header {
+  display: flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 8px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  font-size: 0.82em;
+}
+
+.cm-code-toggle {
+  width: 22px; height: 20px; padding: 0;
+  background: transparent; color: var(--muted);
+  border: 1px solid var(--border);
+  cursor: pointer; font-family: inherit; font-size: 0.95em; line-height: 1;
+  flex-shrink: 0;
+}
+.cm-code-toggle:hover { background: var(--bg); color: var(--accent); border-color: var(--accent); }
+
+.cm-code-lang {
+  flex: 1; text-align: center; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;
+}
+
+.cm-code-copy {
+  margin-left: auto; padding: 2px 8px;
+  background: transparent; color: var(--muted);
+  border: 1px solid var(--border);
+  cursor: pointer; font-family: inherit; font-size: 0.95em; line-height: 1.2;
+  flex-shrink: 0;
+}
+.cm-code-copy:hover { background: var(--bg); color: var(--accent); border-color: var(--accent); }
+
+.cm-code-block pre {
+  margin: 0; padding: 10px 12px; overflow-x: auto;
+  font-family: 'Fira Code', monospace; font-size: 0.9em;
+}
+
+.cm-code-block pre code {
+  outline: none;
+  display: block;
+  white-space: pre;
+}
+
+.cm-code-block pre code[contenteditable="true"] {
+  background: var(--bg);
+  padding: 4px 6px;
+}
+
+/* ============================================================
+   Embeds — image / audio / video
+   ============================================================ */
+.cm-embed { display: inline-block; vertical-align: top; max-width: 100%; }
+
+.cm-embed-img-box {
+  display: inline-block; resize: both; overflow: hidden;
+  border: 1px solid var(--border); background: var(--surface);
+  padding: 2px; min-width: 60px; min-height: 40px;
+  line-height: 0; vertical-align: top;
+}
+
+.cm-embed-img-box img {
+  display: block; width: 100%; height: 100%;
+  object-fit: contain; pointer-events: none; user-select: none;
+}
+
+/* Audio — flat, zero rounded corners anywhere inside the widget */
+.cm-embed-audio-box {
+  display: inline-flex; align-items: center;
+  padding: 4px 8px; background: var(--surface);
+  border: 1px solid var(--border); height: 40px; max-width: 100%;
+}
+
+.cm-embed-audio-box audio {
+  width: 280px; height: 30px; outline: none;
+  color-scheme: dark; background: transparent;
+}
+
+.cm-embed-audio-box audio,
+.cm-embed-audio-box audio::-webkit-media-controls-panel,
+.cm-embed-audio-box audio::-webkit-media-controls-enclosure,
+.cm-embed-audio-box audio::-webkit-media-controls,
+.cm-embed-audio-box audio::-webkit-media-controls-current-time-display,
+.cm-embed-audio-box audio::-webkit-media-controls-time-remaining-display,
+.cm-embed-audio-box audio::-webkit-media-controls-volume-slider,
+.cm-embed-audio-box audio::-webkit-media-controls-play-button,
+.cm-embed-audio-box audio::-webkit-media-controls-timeline {
+  border-radius: 0 !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+}
+
+/* Video */
+.cm-embed-video-box {
+  display: inline-flex; flex-direction: column;
+  background: var(--surface); border: 1px solid var(--border);
+  overflow: hidden; max-width: 100%;
+}
+.cm-embed-video-top {
+  height: 24px; padding: 0 10px; display: flex; align-items: center;
+  background: var(--surface-2); border-bottom: 1px solid var(--border);
+  font-size: 0.8em; color: var(--muted); font-weight: 600;
+}
+.cm-embed-video-el {
+  display: block; width: 480px; max-width: 100%; max-height: 320px;
+  background: #000; cursor: pointer;
+}
+.cm-embed-video-bottom {
+  height: 18px; padding: 0 6px; display: flex; align-items: center;
+  background: var(--surface-2); border-top: 1px solid var(--border);
+}
+.cm-embed-video-track {
+  flex: 1; height: 6px; background: var(--bg); overflow: hidden;
+}
+.cm-embed-video-fill {
+  display: block; height: 100%; width: 0;
+  background: var(--accent); transition: width 100ms linear;
+}
+
+/* ============================================================
+   Table widget
+   ============================================================ */
+.cm-table-widget {
+  display: inline-grid;
+  grid-template-columns: auto auto;
+  grid-template-rows: auto auto;
+  grid-template-areas: "table colbar" "rowbar .";
+  gap: 6px;
+  margin: 16px 0 16px 16px;
+  vertical-align: top; padding: 0; background: transparent;
+}
+
+.cm-table-inner {
+  grid-area: table; position: relative; display: inline-block;
+  border: 1px solid var(--border); background: var(--surface);
+}
+
+.cm-table {
+  border-collapse: collapse; table-layout: fixed;
+  font-size: 0.95em; overflow: hidden;
+}
+
+.cm-table th, .cm-table td {
+  padding: 6px 10px; border: 1px solid var(--border);
+  text-align: left; vertical-align: top; outline: none;
+  color: var(--text); word-break: break-word; background: var(--surface);
+}
+
+.cm-table th { background: var(--surface-2); font-weight: 600; }
+.cm-table th:focus, .cm-table td:focus {
+  background: var(--bg); box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.cm-table-row-bar {
+  grid-area: rowbar; display: flex; flex-direction: row;
+  gap: 4px; justify-content: center; align-items: center;
+}
+.cm-table-col-bar {
+  grid-area: colbar; display: flex; flex-direction: column;
+  gap: 4px; justify-content: center; align-items: center;
+}
+
+.cm-table-sq-btn {
+  width: 22px; height: 22px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface-2); color: var(--muted);
+  border: 1px solid var(--border); cursor: pointer;
+  font-family: inherit; font-size: 1em; line-height: 1;
+}
+.cm-table-sq-btn:hover { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+
+.cm-table-resize-handle {
+  position: absolute; right: -1px; bottom: -1px;
+  width: 14px; height: 14px; cursor: nwse-resize; z-index: 5;
+  background:
+    linear-gradient(135deg, transparent 40%, var(--muted) 40%, var(--muted) 55%, transparent 55%),
+    linear-gradient(135deg, transparent 60%, var(--muted) 60%, var(--muted) 75%, transparent 75%);
+}
+.cm-table-resize-handle:hover {
+  background:
+    linear-gradient(135deg, transparent 40%, var(--accent) 40%, var(--accent) 55%, transparent 55%),
+    linear-gradient(135deg, transparent 60%, var(--accent) 60%, var(--accent) 75%, transparent 75%);
+}
+
+/* ============================================================
+   Canvas — pencil-only, color wheel + darkness + size sliders,
+   resizable from the bottom-right corner.
+   ============================================================ */
+.cm-canvas-box {
+  position: relative;
+  display: inline-block;
+  margin: 8px 0;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.cm-canvas-toolbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 4px 8px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+}
+
+/* Match every other widget — flat, square, muted, no rounded corners. */
+.cm-canvas-color {
+  width: 30px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.cm-canvas-color::-webkit-color-swatch-wrapper {
+  padding: 2px;
+}
+
+.cm-canvas-color::-webkit-color-swatch {
+  border: none;
+  border-radius: 0;
+}
+
+.cm-canvas-darkness,
+.cm-canvas-size {
+  flex: 1;
+  height: 20px;
+  cursor: pointer;
+  accent-color: var(--accent);
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+}
+
+.cm-canvas-darkness::-webkit-slider-runnable-track,
+.cm-canvas-size::-webkit-slider-runnable-track {
+  height: 4px;
+  background: var(--border);
+  border-radius: 0;
+}
+
+.cm-canvas-darkness::-webkit-slider-thumb,
+.cm-canvas-size::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  background: var(--accent);
+  border: none;
+  border-radius: 0;
+  margin-top: -4px;
+  cursor: pointer;
+}
+
+.cm-canvas-preview {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.cm-canvas-size-label {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.8em;
+  color: var(--muted);
+  min-width: 40px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.cm-canvas-box canvas {
+  display: block;
+  width: 400px;
+  height: 400px;
+  cursor: crosshair;
+  background: #ffffff;
+}
+
+.cm-canvas-resize-handle {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 14px;
+  height: 14px;
+  cursor: nwse-resize;
+  z-index: 5;
+  background:
+    linear-gradient(135deg, transparent 40%, var(--muted) 40%, var(--muted) 55%, transparent 55%),
+    linear-gradient(135deg, transparent 60%, var(--muted) 60%, var(--muted) 75%, transparent 75%);
+}
+
+.cm-canvas-resize-handle:hover {
+  background:
+    linear-gradient(135deg, transparent 40%, var(--accent) 40%, var(--accent) 55%, transparent 55%),
+    linear-gradient(135deg, transparent 60%, var(--accent) 60%, var(--accent) 75%, transparent 75%);
+}

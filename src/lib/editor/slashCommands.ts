@@ -1,10 +1,44 @@
 import { EditorView } from '@codemirror/view';
+import { CompletionContext, CompletionResult } from '@codemirror/autocomplete';
 
 const TABLE_TEMPLATE = `| Column 1 | Column 2 |\n|----------|----------|\n| Cell     | Cell     |`;
 
-const COLOR_MAP: Record<string, string> = {
+const COLOR_NAMES: Record<string, string> = {
   red: 'r', green: 'g', blue: 'b', yellow: 'y', cyan: 'c', magenta: 'm',
 };
+
+interface SlashDef { label: string; detail: string; }
+
+const SLASH_COMMANDS: SlashDef[] = [
+  { label: '//table', detail: 'Insert a 3-row markdown table template.' },
+  { label: '//date', detail: "Insert today's date in DD-MM-YYYY." },
+  { label: '//time', detail: 'Insert the current time in HH:MM:SS AM/PM.' },
+  { label: '//canvas', detail: 'Insert a drawing canvas saved to attachments/.' },
+  { label: '//color-red', detail: 'Start red text.' },
+  { label: '//color-green', detail: 'Start green text.' },
+  { label: '//color-blue', detail: 'Start blue text.' },
+  { label: '//color-yellow', detail: 'Start yellow text.' },
+  { label: '//color-cyan', detail: 'Start cyan text.' },
+  { label: '//color-magenta', detail: 'Start magenta text.' },
+  { label: '//color-white', detail: 'Reset text color to white (default).' },
+  { label: '//color-reset', detail: 'Alias for //color-white.' },
+];
+
+export function slashCommandCompletions(
+  context: CompletionContext,
+): CompletionResult | null {
+  const word = context.matchBefore(/\/\/[\w-]*/);
+  if (!word) return null;
+  if (word.from === word.to && !context.explicit) return null;
+  return {
+    from: word.from,
+    options: SLASH_COMMANDS.map((c) => ({
+      label: c.label,
+      info: c.detail,
+      apply: c.label + ' ',
+    })),
+  };
+}
 
 export function handleSlashSpace(view: EditorView): boolean {
   const state = view.state;
@@ -13,7 +47,7 @@ export function handleSlashSpace(view: EditorView): boolean {
   const pos = sel.head;
   const line = state.doc.lineAt(pos);
   const before = line.text.slice(0, pos - line.from);
-  const m = before.match(/\/\/(\w+)$/);
+  const m = before.match(/\/\/([\w-]+)$/);
   if (!m) return false;
 
   const cmd = m[1].toLowerCase();
@@ -60,13 +94,25 @@ export function handleSlashSpace(view: EditorView): boolean {
     return true;
   }
 
-  if (cmd === 'white' || COLOR_MAP[cmd]) {
-    const marker = cmd === 'white' ? '{/}' : `{${COLOR_MAP[cmd]}}`;
+  if (cmd === 'color-white' || cmd === 'color-reset') {
     view.dispatch({
-      changes: { from: cmdStart, to: pos, insert: marker },
-      selection: { anchor: cmdStart + marker.length },
+      changes: { from: cmdStart, to: pos, insert: '{/}' },
+      selection: { anchor: cmdStart + 3 },
     });
     return true;
+  }
+
+  const colorMatch = cmd.match(/^color-(\w+)$/);
+  if (colorMatch) {
+    const marker = COLOR_NAMES[colorMatch[1]];
+    if (marker) {
+      const insert = `{${marker}}`;
+      view.dispatch({
+        changes: { from: cmdStart, to: pos, insert },
+        selection: { anchor: cmdStart + insert.length },
+      });
+      return true;
+    }
   }
 
   return false;

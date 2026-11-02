@@ -1,0 +1,131 @@
+/* ============================================================
+   File tree pane (left) — flat keyboard-navigable tree
+   ============================================================ */
+.tree-pane {
+  padding: 8px;
+  font-size: 13px;
+  overflow: auto;
+  height: 100%;
+  outline: none;
+  font-family: 'Fira Code', monospace;
+}
+
+.tree-pane:focus { outline: none; }
+
+.tree-body {
+  min-height: 100%;
+}
+
+.tree-item {
+  display: block;
+  padding: 3px 8px;
+  cursor: pointer;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  user-select: none;
+}
+
+.tree-item.dir {
+  color: #dcdcaa;
+  font-weight: 500;
+}
+
+.tree-item.file {
+  color: var(--text);
+}
+
+.tree-item:hover {
+  background: var(--surface-2);
+}
+
+.tree-item.active {
+  color: var(--accent);
+}
+
+.tree-item.selected {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+.tree-item.selected.active {
+  color: var(--bg);
+}
+
+.tree-item-input {
+  display: block;
+  width: calc(100% - 8px);
+  padding: 1px 5px;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--accent);
+  font-family: 'Fira Code', monospace;
+  font-size: 13px;
+  outline: none;
+}
+
+/* ============================================================
+   Outline treeview (right)
+   ============================================================ */
+.outline-pane {
+  padding: 8px;
+  font-size: 13px;
+  overflow: auto;
+  height: 100%;
+  color: var(--muted);
+}
+
+.outline-node {
+  display: flex;
+  flex-direction: column;
+}
+
+.outline-row {
+  display: flex;
+  align-items: center;
+  padding: 3px 6px;
+  cursor: pointer;
+  border-radius: 3px;
+  color: var(--text);
+  border-left: 2px solid transparent;
+  user-select: none;
+}
+
+.outline-row:hover {
+  background: var(--surface-2);
+  color: var(--accent);
+}
+
+.outline-row.active {
+  background: var(--surface-2);
+  color: var(--accent);
+  border-left-color: var(--accent);
+  font-weight: 600;
+}
+
+.outline-arrow {
+  display: inline-block;
+  width: 14px;
+  font-size: 0.8em;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.outline-arrow-empty { visibility: hidden; }
+
+.outline-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.outline-children { padding-left: 10px; }
+
+.outline-pin .outline-label {
+  color: #eab308;
+  font-style: italic;
+}
+
+.outline-pin.active .outline-label { color: #facc15; }
+.outline-pin.active { border-left-color: #eab308; }

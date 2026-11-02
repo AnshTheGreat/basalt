@@ -21,11 +21,6 @@ function showVideoMenu(x: number, y: number, video: HTMLVideoElement) {
   menu.style.left = `${x}px`;
   menu.style.top = `${y}px`;
 
-  const title = document.createElement('div');
-  title.className = 'context-menu-header';
-  title.textContent = 'Playback Speed';
-  menu.appendChild(title);
-
   for (const s of [0.5, 0.75, 1, 1.25, 1.5, 2]) {
     const item = document.createElement('div');
     item.className = 'context-menu-item';
@@ -95,10 +90,7 @@ export class EmbedWidget extends WidgetType {
         if (m) parsed = [parseInt(m[1], 10), parseInt(m[2], 10)];
       }
 
-      // Apply initial size BEFORE the promise resolves, so the box has
-      // non-zero dimensions on first paint (avoids Chromium refusing to relayout).
       applySize(parsed ? parsed[0] : 300, parsed ? parsed[1] : 200);
-
       img.style.width = '100%';
       img.style.height = '100%';
       img.style.display = 'block';
@@ -111,12 +103,10 @@ export class EmbedWidget extends WidgetType {
       const dispatchResize = () => {
         const w = Math.round(box.offsetWidth);
         const h = Math.round(box.offsetHeight);
-        if (w <= 0 || h <= 0) return;
-        if (w === lastW && h === lastH) return;
+        if (w <= 0 || h <= 0 || (w === lastW && h === lastH) || !box.isConnected) return;
         lastW = w;
         lastH = h;
-        if (!box.isConnected) return;
-        const newText = `f'${this.name}'_'${this.path}'_'${w}x${h}'`;
+        const newText = `f"${this.name}"_"${this.path}"_"${w}x${h}"`;
         try {
           view.dispatch({ changes: { from: this.from, to: this.to, insert: newText } });
         } catch { /* stale */ }
@@ -129,12 +119,9 @@ export class EmbedWidget extends WidgetType {
       ro.observe(box);
 
       window.vaultAPI.readImageAsDataURL(this.path).then((dataUrl) => {
-        if (!dataUrl || !dataUrl.startsWith('data:image/')) {
-          throw new Error(`Bad data URL for ${this.path}`);
-        }
+        if (!dataUrl || !dataUrl.startsWith('data:image/')) throw new Error(`Bad data URL`);
         img.src = dataUrl;
-      }).catch((err) => {
-        console.error('[embed] image load failed:', this.path, err);
+      }).catch(() => {
         box.innerHTML = '';
         box.textContent = `⚠ ${this.name}`;
         box.style.width = '220px';
@@ -143,15 +130,13 @@ export class EmbedWidget extends WidgetType {
         box.style.alignItems = 'center';
         box.style.justifyContent = 'center';
         box.style.color = 'var(--muted)';
-        box.style.fontSize = '0.85em';
       });
 
       img.onload = () => {
         const nw = img.naturalWidth || 300;
         const nh = img.naturalHeight || 200;
-        if (parsed) {
-          applySize(parsed[0], parsed[1]);
-        } else {
+        if (parsed) applySize(parsed[0], parsed[1]);
+        else {
           const maxW = 500;
           if (nw > maxW) applySize(maxW, Math.round(nh * (maxW / nw)));
           else applySize(nw, nh);

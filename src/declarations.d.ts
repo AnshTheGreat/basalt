@@ -9,6 +9,7 @@ interface VaultAPI {
   createVault(): Promise<string | null>;
   listFiles(): Promise<FileNode[]>;
   readFile(p: string): Promise<string>;
+  readBinary(p: string): Promise<ArrayBuffer>;
   writeFile(p: string, c: string): Promise<void>;
   writeBinary(p: string, b: ArrayBuffer): Promise<void>;
   createFile(p: string): Promise<void>;

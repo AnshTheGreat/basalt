@@ -6,7 +6,7 @@ import { CodeWidget } from '../widgets/codeWidget';
 import { CanvasWidget } from '../widgets/canvasWidget';
 import { TableWidget } from '../widgets/tableWidget';
 
-const CODE_RE = /(?<![A-Za-z0-9_])code'([^'_]+)'_'((?:[^'\\]|\\.)*)'/g;
+const CODE_RE = /(?<![A-Za-z0-9_])code"([^"_]+)"_"((?:[^"\\]|\\.)*)"/g;
 const CANVAS_RE = /\{canvas:([^}]+)\}/g;
 const COLOR_MARKER_RE = /\{([rgbymc])\}|\{\/\}/g;
 
@@ -17,10 +17,7 @@ interface TableRange { from: number; to: number; rows: string[][]; }
 interface ColorSpan { from: number; to: number; color: string; }
 interface Range { from: number; to: number; }
 
-interface BuiltLine {
-  decos: Decos;
-  colorMarkers: Range[];
-}
+interface BuiltLine { decos: Decos; colorMarkers: Range[]; }
 
 interface FieldState {
   byLine: Decos[];
@@ -70,11 +67,7 @@ function findTableRanges(doc: string): TableRange[] {
       rows.push(trimmed.split('|').map((c) => c.trim()));
     }
 
-    out.push({
-      from: offsets[i],
-      to: offsets[j - 1] + lines[j - 1].length,
-      rows,
-    });
+    out.push({ from: offsets[i], to: offsets[j - 1] + lines[j - 1].length, rows });
     i = j;
   }
   return out;
@@ -95,12 +88,7 @@ function findColorSpans(doc: string): ColorSpan[] {
   return spans;
 }
 
-function applyMandatory(
-  text: string,
-  lineStart: number,
-  push: Push,
-  colors: ColorSpan[],
-): Range[] {
+function applyMandatory(text: string, lineStart: number, push: Push, colors: ColorSpan[]): Range[] {
   const markers: Range[] = [];
   const lineEnd = lineStart + text.length;
 
@@ -173,12 +161,8 @@ function applyFormatting(text: string, lineStart: number, push: Push) {
 }
 
 function buildLine(
-  text: string,
-  lineStart: number,
-  isCursor: boolean,
-  inCode: boolean,
-  inTable: boolean,
-  colors: ColorSpan[],
+  text: string, lineStart: number, isCursor: boolean,
+  inCode: boolean, inTable: boolean, colors: ColorSpan[],
 ): BuiltLine {
   if (inTable) return { decos: [], colorMarkers: [] };
 
@@ -186,22 +170,12 @@ function buildLine(
   const push: Push = (from, to, d) => decos.push(d.range(from, to));
 
   const colorMarkers = applyMandatory(text, lineStart, push, colors);
-
-  if (!isCursor && !inCode) {
-    applyFormatting(text, lineStart, push);
-  }
+  if (!isCursor && !inCode) applyFormatting(text, lineStart, push);
 
   return { decos, colorMarkers };
 }
 
-function buildAll(state: EditorState): {
-  byLine: Decos[];
-  cursorLine: number;
-  codes: CodeRange[];
-  tables: TableRange[];
-  colorSpans: ColorSpan[];
-  colorMarkers: Range[];
-} {
+function buildAll(state: EditorState) {
   const doc = state.doc;
   const docStr = doc.toString();
   const codes = findCodes(docStr);
@@ -247,10 +221,7 @@ function buildAll(state: EditorState): {
     const startLine = doc.lineAt(t.from);
     const endLine = doc.lineAt(t.to);
     byLine[startLine.number - 1].push(
-      Decoration.replace({
-        widget: new TableWidget(t.from, t.to, t.rows),
-        block: true,
-      }).range(startLine.from, endLine.to),
+      Decoration.replace({ widget: new TableWidget(t.from, t.to, t.rows), block: true }).range(startLine.from, endLine.to),
     );
   }
 
@@ -258,19 +229,35 @@ function buildAll(state: EditorState): {
 }
 
 function rebuildLine(
-  state: EditorState,
-  lineIdx: number,
-  isCursor: boolean,
-  codes: CodeRange[],
-  tables: TableRange[],
-  colors: ColorSpan[],
+  state: EditorState, lineIdx: number, isCursor: boolean,
+  codes: CodeRange[], tables: TableRange[], colors: ColorSpan[],
 ): BuiltLine {
   const doc = state.doc;
   if (lineIdx < 0 || lineIdx >= doc.lines) return { decos: [], colorMarkers: [] };
   const line = doc.line(lineIdx + 1);
   const inCode = codes.some((c) => line.from < c.to && line.to > c.from);
   const inTable = tables.some((t) => line.from >= t.from && line.to <= t.to);
-  return buildLine(line.text, line.from, isCursor, inCode, inTable, colors);
+  const built = buildLine(line.text, line.from, isCursor, inCode, inTable, colors);
+
+  for (const c of codes) {
+    const startLine = doc.lineAt(c.from);
+    if (startLine.number - 1 === lineIdx) {
+      built.decos.push(
+        Decoration.replace({ widget: new CodeWidget(c.lang, c.code, c.from, c.to) }).range(c.from, c.to),
+      );
+    }
+  }
+
+  for (const t of tables) {
+    const startLine = doc.lineAt(t.from);
+    if (startLine.number - 1 === lineIdx) {
+      const endLine = doc.lineAt(t.to);
+      built.decos.push(
+        Decoration.replace({ widget: new TableWidget(t.from, t.to, t.rows), block: true }).range(startLine.from, endLine.to),
+      );
+    }
+  }
+  return built;
 }
 
 function flatten(byLine: Decos[]): DecorationSet {
@@ -282,53 +269,19 @@ function flatten(byLine: Decos[]): DecorationSet {
 export const livePreviewField = StateField.define<FieldState>({
   create(state) {
     const built = buildAll(state);
-    return {
-      byLine: built.byLine,
-      cursorLine: built.cursorLine,
-      codes: built.codes,
-      tables: built.tables,
-      colorSpans: built.colorSpans,
-      colorMarkers: built.colorMarkers,
-      set: flatten(built.byLine),
-    };
+    return { ...built, set: flatten(built.byLine) };
   },
-
   update(prev, tr) {
-    // Any edit → full rebuild (cheap because this only runs on doc change)
     if (tr.docChanged) {
       const built = buildAll(tr.state);
-      return {
-        byLine: built.byLine,
-        cursorLine: built.cursorLine,
-        codes: built.codes,
-        tables: built.tables,
-        colorSpans: built.colorSpans,
-        colorMarkers: built.colorMarkers,
-        set: flatten(built.byLine),
-      };
+      return { ...built, set: flatten(built.byLine) };
     }
-
-    // Cursor-only move → rebuild just the two affected lines.
-    // No rescanning the document, no re-matching regexes across the whole file.
     if (tr.selection) {
       const newCursorLine = tr.state.doc.lineAt(tr.state.selection.main.head).number - 1;
       if (newCursorLine === prev.cursorLine) return prev;
-
       const byLine = prev.byLine.slice();
-
-      const oldBuilt = rebuildLine(
-        tr.state, prev.cursorLine, false, prev.codes, prev.tables, prev.colorSpans,
-      );
-      byLine[prev.cursorLine] = oldBuilt.decos;
-
-      const newBuilt = rebuildLine(
-        tr.state, newCursorLine, true, prev.codes, prev.tables, prev.colorSpans,
-      );
-      byLine[newCursorLine] = newBuilt.decos;
-
-      // Recompute color-marker list because the two rebuilt lines may
-      // have added/removed markers. Full scan only of colour markers, not
-      // the whole document.
+      byLine[prev.cursorLine] = rebuildLine(tr.state, prev.cursorLine, false, prev.codes, prev.tables, prev.colorSpans).decos;
+      byLine[newCursorLine] = rebuildLine(tr.state, newCursorLine, true, prev.codes, prev.tables, prev.colorSpans).decos;
       const colorMarkers = findColorSpans(tr.state.doc.toString())
         .flatMap((span) => {
           const fromLine = tr.state.doc.lineAt(span.from).number;
@@ -336,46 +289,33 @@ export const livePreviewField = StateField.define<FieldState>({
           const out: Range[] = [];
           for (let l = fromLine; l <= toLine; l++) {
             const line = tr.state.doc.line(l);
-            const text = line.text;
-            for (const m of text.matchAll(COLOR_MARKER_RE)) {
+            for (const m of line.text.matchAll(COLOR_MARKER_RE)) {
               const s = line.from + m.index!;
               out.push({ from: s, to: s + m[0].length });
             }
           }
           return out;
         });
-
       return {
-        byLine,
-        cursorLine: newCursorLine,
-        codes: prev.codes,
-        tables: prev.tables,
-        colorSpans: prev.colorSpans,
-        colorMarkers,
-        set: flatten(byLine),
+        byLine, cursorLine: newCursorLine,
+        codes: prev.codes, tables: prev.tables, colorSpans: prev.colorSpans,
+        colorMarkers, set: flatten(byLine),
       };
     }
     return prev;
   },
-
   provide: (f) => EditorView.decorations.from(f, (v) => v.set),
 });
 
 export const atomicColorField = StateField.define<DecorationSet>({
   create(state) {
     const { colorMarkers } = buildAll(state);
-    return Decoration.set(
-      colorMarkers.map((r) => Decoration.replace({}).range(r.from, r.to)),
-      true,
-    );
+    return Decoration.set(colorMarkers.map((r) => Decoration.replace({}).range(r.from, r.to)), true);
   },
   update(prev, tr) {
     if (tr.docChanged || tr.selection) {
       const { colorMarkers } = buildAll(tr.state);
-      return Decoration.set(
-        colorMarkers.map((r) => Decoration.replace({}).range(r.from, r.to)),
-        true,
-      );
+      return Decoration.set(colorMarkers.map((r) => Decoration.replace({}).range(r.from, r.to)), true);
     }
     return prev;
   },

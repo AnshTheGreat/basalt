@@ -1,21 +1,16 @@
-// src/lib/editor/inlineRules.ts
 import { Decoration } from '@codemirror/view';
-import { CommentWidget, LatexWidget, LinkWidget, PinWidget } from '../widgets/inlineWidgets';
+import { CommentWidget, LatexWidget, PinWidget } from '../widgets/inlineWidgets';
 import { EmbedWidget, embedKind } from '../widgets/embedWidget';
 
 export type Push = (from: number, to: number, deco: Decoration) => void;
 
-const FLAGS_RE = /(?<![A-Za-z0-9_])([biush]+)'((?:[^'\\\n]|\\.)*)'/g;
-const STRIKE_RE = /(?<![A-Za-z0-9_])-'((?:[^'\\\n]|\\.)*)'/g;
-const MATH_RE = /\$'([^'\n]*)'/g;
-const LINK_RE = /(?<![A-Za-z0-9_])l'([^']*)'_'([^']*)'/g;
-const EMBED_RE = /(?<![A-Za-z0-9_])f'([^']*)'_'([^']*)'(?:_'([^']*)')?/g;
-const COMMENT_RE = /(?<![A-Za-z0-9_])c'([^'\n]*)'/g;
-const SUPER_RE = /\^'([^'\n]*)'/g;
-const SUB_RE = /~'([^'\n]*)'/g;
-const PIN_RE = /(?<![A-Za-z0-9_])p'([^'\n]*)'/g;
-
-const unescape = (s: string) => s.replace(/\\(.)/g, '$1');
+const FLAGS_RE = /(?<![A-Za-z0-9_])([biush]+)"((?:[^"\\\n]|\\.)*)"/g;
+const MATH_RE = /(?<![A-Za-z0-9_])latex"([^"\n]*)"/g;
+const EMBED_RE = /(?<![A-Za-z0-9_])f"([^"]*)"_"([^"]*)"(?:_"([^"]*)")?/g;
+const COMMENT_RE = /(?<![A-Za-z0-9_])comment"([^"\n]*)"/g;
+const SUPER_RE = /\^"([^"\n]*)"/g;
+const SUB_RE = /~"([^"\n]*)"/g;
+const PIN_RE = /(?<![A-Za-z0-9_])pin"([^"\n]*)"/g;
 
 const FLAG_CLASS: Record<string, string> = {
   b: 'cm-bold', i: 'cm-italic', u: 'cm-underline', s: 'cm-strike', h: 'cm-highlight',
@@ -35,22 +30,9 @@ export function applyInline(line: string, lineStart: number, push: Push) {
       push(openEnd, closeStart, Decoration.mark({ class: classes }));
     }
   }
-  for (const m of line.matchAll(STRIKE_RE)) {
-    const openStart = lineStart + m.index!;
-    const openEnd = openStart + 2;
-    const closeStart = openEnd + m[1].length;
-    const closeEnd = closeStart + 1;
-    push(openStart, openEnd, Decoration.replace({}));
-    push(closeStart, closeEnd, Decoration.replace({}));
-    if (closeStart > openEnd) push(openEnd, closeStart, Decoration.mark({ class: 'cm-strike' }));
-  }
   for (const m of line.matchAll(MATH_RE)) {
     const s = lineStart + m.index!;
     push(s, s + m[0].length, Decoration.replace({ widget: new LatexWidget(m[1]) }));
-  }
-  for (const m of line.matchAll(LINK_RE)) {
-    const s = lineStart + m.index!;
-    push(s, s + m[0].length, Decoration.replace({ widget: new LinkWidget(m[1], m[2]) }));
   }
   for (const m of line.matchAll(EMBED_RE)) {
     const s = lineStart + m.index!;
